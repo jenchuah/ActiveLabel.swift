@@ -14,7 +14,7 @@ public protocol ActiveLabelDelegate: class {
 }
 
 public typealias ConfigureLinkAttribute = (ActiveType, [String : Any], Bool) -> ([String : Any])
-typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveType)
+public typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveType)
 
 @IBDesignable open class ActiveLabel: UILabel {
     
