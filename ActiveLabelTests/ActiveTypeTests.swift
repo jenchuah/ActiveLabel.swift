@@ -50,6 +50,34 @@ class ActiveTypeTests: XCTestCase {
         }
     }
     
+    var allElementsString: [String]? {
+        guard activeElements.count > 0 else { return nil }
+        var elements = [String]()
+        for activeElement in activeElements {
+            switch activeElement {
+            case .mention(let mention): elements.append(mention)
+            case .hashtag(let hashtag): elements.append(hashtag)
+            case .url(let url, _): elements.append(url)
+            case .custom(let element): elements.append(element)
+            }
+        }
+        return elements
+    }
+    
+    var allElementsType: [ActiveType]? {
+        guard activeElements.count > 0 else { return nil }
+        var elements = [ActiveType]()
+        for activeElement in activeElements {
+            switch activeElement {
+            case .mention: elements.append(.mention)
+            case .hashtag: elements.append(.hashtag)
+            case .url: elements.append(.url)
+            case .custom: elements.append(customEmptyType)
+            }
+        }
+        return elements
+    }
+
     override func setUp() {
         super.setUp()
         label.enabledTypes = [.mention, .hashtag, .url]
@@ -96,14 +124,14 @@ class ActiveTypeTests: XCTestCase {
         XCTAssertEqual(currentElementType, ActiveType.mention)
         
         label.text = "@user#hashtag"
-        XCTAssertEqual(activeElements.count, 1)
-        XCTAssertEqual(currentElementString, "user")
-        XCTAssertEqual(currentElementType, ActiveType.mention)
+        XCTAssertEqual(activeElements.count, 2)
+        XCTAssertEqual(allElementsString!, ["hashtag", "user"])
+        XCTAssertEqual(allElementsType!, [ActiveType.hashtag, ActiveType.mention])
         
         label.text = "@user@mention"
-        XCTAssertEqual(activeElements.count, 1)
-        XCTAssertEqual(currentElementString, "user")
-        XCTAssertEqual(currentElementType, ActiveType.mention)
+        XCTAssertEqual(activeElements.count, 2)
+        XCTAssertEqual(allElementsString!, ["user","mention"])
+        XCTAssertEqual(allElementsType!, [ActiveType.mention, ActiveType.mention])
         
         label.text = ".@userhandle"
         XCTAssertEqual(activeElements.count, 1)
@@ -116,11 +144,21 @@ class ActiveTypeTests: XCTestCase {
         XCTAssertEqual(currentElementType, ActiveType.mention)
 
         label.text = "word@mention"
-        XCTAssertEqual(activeElements.count, 0)
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "mention")
+        XCTAssertEqual(currentElementType, ActiveType.mention)
+
         label.text = "@u"
-        XCTAssertEqual(activeElements.count, 0)
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "u")
+        
+        label.text = "@1"
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "1")
+        
         label.text = "@."
         XCTAssertEqual(activeElements.count, 0)
+        
         label.text = "@"
         XCTAssertEqual(activeElements.count, 0)
     }
@@ -147,25 +185,39 @@ class ActiveTypeTests: XCTestCase {
         XCTAssertEqual(currentElementType, ActiveType.hashtag)
         
         label.text = "#some#hashtag"
-        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(activeElements.count, 2)
+        XCTAssertEqual(allElementsString!, ["some", "hashtag"])
         XCTAssertEqual(currentElementString, "some")
         XCTAssertEqual(currentElementType, ActiveType.hashtag)
         
         label.text = "#some@mention"
-        XCTAssertEqual(activeElements.count, 1)
-        XCTAssertEqual(currentElementString, "some")
-        XCTAssertEqual(currentElementType, ActiveType.hashtag)
+        XCTAssertEqual(activeElements.count, 2)
+        XCTAssertEqual(allElementsString!, ["some","mention"])
+        XCTAssertEqual(allElementsType!, [ActiveType.hashtag, ActiveType.mention])
         
         label.text = ".#somehashtag"
-        XCTAssertEqual(activeElements.count, 0)
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "somehashtag")
+        
         label.text = " .#somehashtag"
-        XCTAssertEqual(activeElements.count, 0)
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "somehashtag")
+        
         label.text = "word#hashtag"
-        XCTAssertEqual(activeElements.count, 0)
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "hashtag")
+        
         label.text = "#h"
-        XCTAssertEqual(activeElements.count, 0)
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "h")
+        
+        label.text = "#1"
+        XCTAssertEqual(activeElements.count, 1)
+        XCTAssertEqual(currentElementString, "1")
+        
         label.text = "#."
         XCTAssertEqual(activeElements.count, 0)
+        
         label.text = "#"
         XCTAssertEqual(activeElements.count, 0)
     }
